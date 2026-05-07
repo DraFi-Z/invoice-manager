@@ -1,0 +1,37 @@
+@SpringBootApplication
+        ↓
+@ComponentScan → scans all packages under com.billing.invoice_manager
+        ↓
+finds @Service, @Repository, @Controller, @Configuration classes
+        ↓
+creates instances of all of them → puts them in Application Context
+        ↓
+sees constructor dependencies → injects beans automatically
+        ↓
+@EnableAutoConfiguration → reads classpath dependencies
+        ↓
+activates auto-config classes (Security, DataSource, Flyway etc.)
+        ↓
+your @Configuration beans override the defaults where provided
+        ↓
+application is ready to serve requests
+
+================================================DB- FLOW===========================================
+
+Click Run
+    ↓
+JVM starts → Spring Boot initializes
+    ↓
+Reads application.properties
+    ↓
+HikariCP opens connections → Docker container port 5432
+    ↓
+Flyway scans classpath:db/migration
+    ↓
+Checks flyway_schema_history
+    ↓
+Executes pending SQL scripts → tables created in PostgreSQL
+    ↓
+Hibernate validates entities against tables
+    ↓
+Application ready → serving requests on port 8080
