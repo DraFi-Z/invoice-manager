@@ -35,3 +35,59 @@ Executes pending SQL scripts → tables created in PostgreSQL
 Hibernate validates entities against tables
     ↓
 Application ready → serving requests on port 8080
+
+==============================================Login-Flow=========================================
+
+POST /api/auth/login  { email, password }
+            ↓
+JwtAuthenticationFilter runs
+  → no Authorization header found
+  → calls filterChain.doFilter() — passes through
+            ↓
+SecurityConfig checks — /api/auth/** is permitAll()
+  → request allowed through
+            ↓
+AuthController.login() receives LoginRequest
+            ↓
+AuthService.authenticate(email, password)
+  → userRepository.findByEmail(email)
+  → checks user.isActive()
+  → passwordEncoder.matches(rawPassword, storedHash)
+  → returns User if all checks pass
+            ↓
+JwtService.generateToken(email, role)
+  → builds JWT payload with email as subject, role as claim
+  → signs with secret key
+  → returns token string
+            ↓
+AuthController builds LoginResponse
+  → token, email, role, fullName
+            ↓
+200 OK — caller receives their token
+
+
+===============================================Authenticate-Request Flow========================================
+GET /api/invoices
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...
+            ↓
+JwtAuthenticationFilter runs
+  → reads Authorization header
+  → strips "Bearer " prefix → gets raw token
+  → jwtService.isTokenValid(token)
+      → parses token, verifies signature, checks expiry
+      → returns true
+  → jwtService.extractEmail(token) → "ahmad@billing.com"
+  → jwtService.extractRole(token) → "ADMIN"
+  → creates UsernamePasswordAuthenticationToken
+      with email as principal
+      and ROLE_ADMIN as authority
+  → sets it in SecurityContextHolder
+  → calls filterChain.doFilter() — passes through
+            ↓
+SecurityConfig checks — /api/invoices requires authenticated()
+  → SecurityContextHolder has authentication → allowed
+            ↓
+InvoiceController.getAllInvoices() executes
+  → returns invoice list
+            ↓
+200 OK
