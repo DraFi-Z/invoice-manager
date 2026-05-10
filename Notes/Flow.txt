@@ -91,3 +91,33 @@ InvoiceController.getAllInvoices() executes
   → returns invoice list
             ↓
 200 OK
+
+
+===========================================================Request with no token===========================================================
+
+GET /api/invoices
+  (no Authorization header)
+            ↓
+JwtAuthenticationFilter runs
+  → no Authorization header found
+  → calls filterChain.doFilter() — passes through
+  → SecurityContextHolder has NO authentication
+            ↓
+SecurityConfig checks — /api/invoices requires authenticated()
+  → no authentication in context → BLOCKED
+            ↓
+401 Unauthorized
+
+============================================================Wrong role ======================================================================
+POST /api/users
+Authorization: Bearer <token with role ACCOUNTANT>
+            ↓
+JwtAuthenticationFilter runs
+  → valid token
+  → sets ROLE_ACCOUNTANT in SecurityContextHolder
+            ↓
+SecurityConfig checks — /api/users requires hasRole("ADMIN")
+  → ROLE_ACCOUNTANT ≠ ROLE_ADMIN → BLOCKED
+            ↓
+403 Forbidden
+
