@@ -28,10 +28,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        System.out.println("DEBUG filter running for: " + request.getRequestURI());
+//        System.out.println("DEBUG filter running for: " + request.getRequestURI());
 
         String authHeader = request.getHeader("Authorization");
-        System.out.println("DEBUG auth header: " + authHeader);
+//        System.out.println("DEBUG auth header: " + authHeader);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             System.out.println("DEBUG no token found, passing through");

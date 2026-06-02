@@ -121,3 +121,27 @@ SecurityConfig checks — /api/users requires hasRole("ADMIN")
             ↓
 403 Forbidden
 
+
+=============================================================Security Chain =================================================================
+Spring starts
+    ↓
+Component scan finds:
+    @Component JwtService          → created, in context
+    @Component DataSeeder          → created, in context
+    @Configuration SecurityConfig  → created, injects JwtService
+        ↓
+    SecurityConfig @Bean methods called:
+        jwtAuthenticationFilter()  → creates filter manually
+        passwordEncoder()          → creates BCrypt encoder
+        securityFilterChain()      → builds security chain
+            places JwtAuthenticationFilter via addFilterBefore()
+            ↓
+    Security chain is now:
+        ... → JwtAuthenticationFilter → ... → AuthorizationFilter
+    ↓
+DataSeeder.run() executes
+    → checks if users exist
+    → creates admin if empty
+    ↓
+Application ready on port 8080
+
