@@ -13,7 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-@Component
+//@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
@@ -28,9 +28,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        System.out.println("DEBUG filter running for: " + request.getRequestURI());
+
         String authHeader = request.getHeader("Authorization");
+        System.out.println("DEBUG auth header: " + authHeader);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("DEBUG no token found, passing through");
             filterChain.doFilter(request, response);
             return;
         }
@@ -38,12 +42,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         if (!jwtService.isTokenValid(token)) {
+            System.out.println("DEBUG invalid token");
             filterChain.doFilter(request, response);
             return;
         }
 
         String email = jwtService.extractEmail(token);
         String role = jwtService.extractRole(token);
+        System.out.println("DEBUG valid token for: " + email + " role: " + role);
 
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(
