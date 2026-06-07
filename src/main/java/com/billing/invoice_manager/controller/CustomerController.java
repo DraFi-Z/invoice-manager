@@ -6,6 +6,7 @@ import com.billing.invoice_manager.entity.Customer;
 import com.billing.invoice_manager.exception.ResourceNotFoundException;
 import com.billing.invoice_manager.mapper.CustomerMapper;
 import com.billing.invoice_manager.service.CustomerService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ public class CustomerController {
 
     @PostMapping
     public ResponseEntity<CustomerResponse> createCustomer(
-            @RequestBody CreateCustomerRequest request) {
+            @Valid @RequestBody CreateCustomerRequest request) {
         Customer customer = CustomerMapper.toEntity(request);
         Customer created = customerService.createCustomer(customer);
         return ResponseEntity.status(HttpStatus.CREATED).body(CustomerMapper.toResponse(created));

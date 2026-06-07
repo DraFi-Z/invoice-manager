@@ -62,6 +62,7 @@ import com.billing.invoice_manager.entity.User;
 import com.billing.invoice_manager.exception.ResourceNotFoundException;
 import com.billing.invoice_manager.mapper.UserMapper;
 import com.billing.invoice_manager.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -79,7 +80,7 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserResponse> createUser(@RequestBody CreateUserRequest request) {
+    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
         User user = UserMapper.toEntity(request);
         User created = userService.createUser(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(UserMapper.toResponse(created));
@@ -103,7 +104,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> updateUser(@PathVariable Long id,
-                                                   @RequestBody CreateUserRequest request) {
+                                                   @Valid @RequestBody CreateUserRequest request) {
         User user = UserMapper.toEntity(request);
         User updated = userService.updateUser(id, user);
         return ResponseEntity.ok(UserMapper.toResponse(updated));
