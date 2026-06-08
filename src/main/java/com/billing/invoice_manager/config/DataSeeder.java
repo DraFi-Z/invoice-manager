@@ -20,7 +20,6 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("DEBUG fresh hash: " + passwordEncoder.encode("admin123"));
 
         if (userRepository.count() == 0) {
             User admin = new User();

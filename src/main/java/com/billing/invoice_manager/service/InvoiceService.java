@@ -9,6 +9,8 @@ import com.billing.invoice_manager.exception.ResourceNotFoundException;
 import com.billing.invoice_manager.repository.CustomerRepository;
 import com.billing.invoice_manager.repository.InvoiceRepository;
 import com.billing.invoice_manager.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -58,21 +60,33 @@ public class InvoiceService {
 
         return invoiceRepository.save(invoice);
     }
+//    Old method without pagination
+//    public List<Invoice> getAllInvoices() {
+//        return invoiceRepository.findAll();
+//    }
 
-    public List<Invoice> getAllInvoices() {
-        return invoiceRepository.findAll();
+    public Page<Invoice> getAllInvoices(Pageable pageable) {
+        return invoiceRepository.findAll(pageable);
     }
 
     public Optional<Invoice> getInvoiceById(Long id) {
         return invoiceRepository.findById(id);
     }
 
-    public List<Invoice> getInvoicesByStatus(String status) {
-        return invoiceRepository.findByStatus(status);
+//    public List<Invoice> getInvoicesByStatus(String status) {
+//        return invoiceRepository.findByStatus(status);
+//    }
+
+    public Page<Invoice> getInvoicesByStatus(String status, Pageable pageable) {
+        return invoiceRepository.findByStatus(status, pageable);
     }
 
-    public List<Invoice> getInvoicesByCustomer(Long customerId) {
-        return invoiceRepository.findByCustomerId(customerId);
+//    public List<Invoice> getInvoicesByCustomer(Long customerId) {
+//        return invoiceRepository.findByCustomerId(customerId);
+//    }
+
+    public Page<Invoice> getInvoicesByCustomer(Long customerId, Pageable pageable) {
+        return invoiceRepository.findByCustomerId(customerId, pageable);
     }
 
     @Transactional
