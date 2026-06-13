@@ -81,16 +81,16 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
-        User user = UserMapper.toEntity(request);
+        User user = UserMapper.INSTANCE.toEntity(request);
         User created = userService.createUser(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(UserMapper.toResponse(created));
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserMapper.INSTANCE.toResponse(created));
     }
 
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         List<UserResponse> users = userService.getAllUsers()
                 .stream()
-                .map(UserMapper::toResponse)
+                .map(user -> UserMapper.INSTANCE.toResponse(user))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(users);
     }
@@ -99,15 +99,15 @@ public class UserController {
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         User user = userService.getUserById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
-        return ResponseEntity.ok(UserMapper.toResponse(user));
+        return ResponseEntity.ok(UserMapper.INSTANCE.toResponse(user));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> updateUser(@PathVariable Long id,
                                                    @Valid @RequestBody CreateUserRequest request) {
-        User user = UserMapper.toEntity(request);
+        User user = UserMapper.INSTANCE.toEntity(request);
         User updated = userService.updateUser(id, user);
-        return ResponseEntity.ok(UserMapper.toResponse(updated));
+        return ResponseEntity.ok(UserMapper.INSTANCE.toResponse(updated));
     }
 
     @PutMapping("/{id}/deactivate")

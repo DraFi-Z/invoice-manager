@@ -33,9 +33,9 @@ public class InvoiceController {
     public ResponseEntity<InvoiceResponse> createInvoice(
             @Valid @RequestBody CreateInvoiceRequest request,
             @RequestParam Long userId) {
-        Invoice invoice = InvoiceMapper.toEntity(request);
+        Invoice invoice = InvoiceMapper.INSTANCE.toEntity(request);
         Invoice created = invoiceService.createInvoice(invoice, request.getCustomerId(), userId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(InvoiceMapper.toResponse(created));
+        return ResponseEntity.status(HttpStatus.CREATED).body(InvoiceMapper.INSTANCE.toResponse(created));
     }
 // getAllInvoices function without pagination
 //    @GetMapping
@@ -63,7 +63,7 @@ public class InvoiceController {
 
         List<InvoiceResponse> content = invoicePage.getContent()
                 .stream()
-                .map(InvoiceMapper::toResponse)
+                .map(invoice -> InvoiceMapper.INSTANCE.toResponse(invoice))
                 .collect(Collectors.toList());
 
         PageResponse<InvoiceResponse> response = new PageResponse<>(
@@ -82,7 +82,7 @@ public class InvoiceController {
     public ResponseEntity<InvoiceResponse> getInvoiceById(@PathVariable Long id) {
         Invoice invoice = invoiceService.getInvoiceById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice", "id", id));
-        return ResponseEntity.ok(InvoiceMapper.toResponse(invoice));
+        return ResponseEntity.ok(InvoiceMapper.INSTANCE.toResponse(invoice));
     }
 
     // getinvoicesbystatus without pagination
@@ -106,7 +106,7 @@ public class InvoiceController {
 
         List<InvoiceResponse> content = invoicePage.getContent()
                 .stream()
-                .map(InvoiceMapper::toResponse)
+                .map(invoice -> InvoiceMapper.INSTANCE.toResponse(invoice))
                 .collect(Collectors.toList());
 
         PageResponse<InvoiceResponse> response = new PageResponse<>(
@@ -142,7 +142,7 @@ public class InvoiceController {
 
         List<InvoiceResponse> content = invoicePage.getContent()
                 .stream()
-                .map(InvoiceMapper::toResponse)
+                .map(invoice -> InvoiceMapper.INSTANCE.toResponse(invoice))
                 .collect(Collectors.toList());
 
         PageResponse<InvoiceResponse> response = new PageResponse<>(
@@ -162,7 +162,7 @@ public class InvoiceController {
                                                                @RequestBody Map<String, String> body) {
         String newStatus = body.get("status");
         Invoice updated = invoiceService.updateInvoiceStatus(id, newStatus);
-        return ResponseEntity.ok(InvoiceMapper.toResponse(updated));
+        return ResponseEntity.ok(InvoiceMapper.INSTANCE.toResponse(updated));
     }
 
     @DeleteMapping("/{id}")

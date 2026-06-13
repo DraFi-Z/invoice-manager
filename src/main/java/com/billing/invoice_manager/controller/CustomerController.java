@@ -26,16 +26,16 @@ public class CustomerController {
     @PostMapping
     public ResponseEntity<CustomerResponse> createCustomer(
             @Valid @RequestBody CreateCustomerRequest request) {
-        Customer customer = CustomerMapper.toEntity(request);
+        Customer customer = CustomerMapper.INSTANCE.toEntity(request);
         Customer created = customerService.createCustomer(customer);
-        return ResponseEntity.status(HttpStatus.CREATED).body(CustomerMapper.toResponse(created));
+        return ResponseEntity.status(HttpStatus.CREATED).body(CustomerMapper.INSTANCE.toResponse(created));
     }
 
     @GetMapping
     public ResponseEntity<List<CustomerResponse>> getAllCustomers() {
         List<CustomerResponse> customers = customerService.getAllCustomers()
                 .stream()
-                .map(CustomerMapper::toResponse)
+                .map(customer -> CustomerMapper.INSTANCE.toResponse(customer))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(customers);
     }
@@ -44,15 +44,15 @@ public class CustomerController {
     public ResponseEntity<CustomerResponse> getCustomerById(@PathVariable Long id) {
         Customer customer = customerService.getCustomerById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", id));
-        return ResponseEntity.ok(CustomerMapper.toResponse(customer));
+        return ResponseEntity.ok(CustomerMapper.INSTANCE.toResponse(customer));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<CustomerResponse> updateCustomer(@PathVariable Long id,
                                                            @RequestBody CreateCustomerRequest request) {
-        Customer customer = CustomerMapper.toEntity(request);
+        Customer customer = CustomerMapper.INSTANCE.toEntity(request);
         Customer updated = customerService.updateCustomer(id, customer);
-        return ResponseEntity.ok(CustomerMapper.toResponse(updated));
+        return ResponseEntity.ok(CustomerMapper.INSTANCE.toResponse(updated));
     }
 
     @DeleteMapping("/{id}")
