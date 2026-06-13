@@ -5,9 +5,16 @@ import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDate;
 import java.util.List;
 
+@Getter
+@Setter
+@NoArgsConstructor
 public class CreateInvoiceRequest {
 
     @NotNull(message = "Customer ID is required")
@@ -27,21 +34,21 @@ public class CreateInvoiceRequest {
     @Valid
     private List<CreateLineItemRequest> lineItems;
 
-    public CreateInvoiceRequest() {
-    }
-
-    public Long getCustomerId() { return this.customerId; }
-    public void setCustomerId(Long customerId) { this.customerId = customerId; }
-
-    public LocalDate getIssueDate() { return this.issueDate; }
-    public void setIssueDate(LocalDate issueDate) { this.issueDate = issueDate; }
-
-    public LocalDate getDueDate() { return this.dueDate; }
-    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
-
-    public String getNotes() { return this.notes; }
-    public void setNotes(String notes) { this.notes = notes; }
-
-    public List<CreateLineItemRequest> getLineItems() { return this.lineItems; }
-    public void setLineItems(List<CreateLineItemRequest> lineItems) { this.lineItems = lineItems; }
+//    public CreateInvoiceRequest() {
+//    }
+//
+//    public Long getCustomerId() { return this.customerId; }
+//    public void setCustomerId(Long customerId) { this.customerId = customerId; }
+//
+//    public LocalDate getIssueDate() { return this.issueDate; }
+//    public void setIssueDate(LocalDate issueDate) { this.issueDate = issueDate; }
+//
+//    public LocalDate getDueDate() { return this.dueDate; }
+//    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
+//
+//    public String getNotes() { return this.notes; }
+//    public void setNotes(String notes) { this.notes = notes; }
+//
+//    public List<CreateLineItemRequest> getLineItems() { return this.lineItems; }
+//    public void setLineItems(List<CreateLineItemRequest> lineItems) { this.lineItems = lineItems; }
 }

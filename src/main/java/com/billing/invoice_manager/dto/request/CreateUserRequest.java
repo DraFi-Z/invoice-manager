@@ -4,7 +4,13 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
+@NoArgsConstructor
 public class CreateUserRequest {
 
     @NotBlank(message = "Full name is required")
@@ -23,18 +29,18 @@ public class CreateUserRequest {
     @Pattern(regexp = "ADMIN|ACCOUNTANT|VIEWER", message = "Role must be ADMIN, ACCOUNTANT or VIEWER")
     private String role;
 
-    public CreateUserRequest() {
-    }
-
-    public String getFullName() { return this.fullName; }
-    public void setFullName(String fullName) { this.fullName = fullName; }
-
-    public String getEmail() { return this.email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getPassword() { return this.password; }
-    public void setPassword(String password) { this.password = password; }
-
-    public String getRole() { return this.role; }
-    public void setRole(String role) { this.role = role; }
+//    public CreateUserRequest() {
+//    }
+//
+//    public String getFullName() { return this.fullName; }
+//    public void setFullName(String fullName) { this.fullName = fullName; }
+//
+//    public String getEmail() { return this.email; }
+//    public void setEmail(String email) { this.email = email; }
+//
+//    public String getPassword() { return this.password; }
+//    public void setPassword(String password) { this.password = password; }
+//
+//    public String getRole() { return this.role; }
+//    public void setRole(String role) { this.role = role; }
 }
