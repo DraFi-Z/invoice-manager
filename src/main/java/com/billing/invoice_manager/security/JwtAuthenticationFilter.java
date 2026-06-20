@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,6 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
+@Slf4j
 //@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -33,8 +35,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
 //        System.out.println("DEBUG auth header: " + authHeader);
 
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            System.out.println("DEBUG no token found, passing through");
             filterChain.doFilter(request, response);
             return;
         }
@@ -42,14 +44,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         if (!jwtService.isTokenValid(token)) {
-            System.out.println("DEBUG invalid token");
+            log.warn("Invalid JWT token received for request: {}", request.getRequestURI());
             filterChain.doFilter(request, response);
             return;
         }
 
+
         String email = jwtService.extractEmail(token);
         String role = jwtService.extractRole(token);
-        System.out.println("DEBUG valid token for: " + email + " role: " + role);
+        log.debug("Valid token for: {} role: {}", email, role);
 
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(

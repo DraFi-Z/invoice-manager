@@ -9,6 +9,7 @@ import com.billing.invoice_manager.exception.ResourceNotFoundException;
 import com.billing.invoice_manager.repository.CustomerRepository;
 import com.billing.invoice_manager.repository.InvoiceRepository;
 import com.billing.invoice_manager.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class InvoiceService {
 
@@ -36,10 +38,18 @@ public class InvoiceService {
 
     @Transactional
     public Invoice createInvoice(Invoice invoice, Long customerId, Long userId) {
+        log.info("Creating invoice for customerId: {} by userId: {}", customerId, userId);
         Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", customerId));
+                .orElseThrow(() -> {
+                    log.error("Customer not found with id: {}", customerId);
+                    return new ResourceNotFoundException("Customer", "id", customerId);
+                });
+
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+                .orElseThrow(() -> {
+                    log.error("User not found with id: {}", userId);
+                    return new ResourceNotFoundException("User", "id", userId);
+                });
 
         invoice.setCustomer(customer);
         invoice.setCreatedBy(user);
@@ -58,7 +68,9 @@ public class InvoiceService {
 
         calculateTotal(invoice);
 
-        return invoiceRepository.save(invoice);
+        Invoice saved = invoiceRepository.save(invoice);
+        log.info("Invoice created successfully with number: {}", saved.getInvoiceNumber());
+        return saved;
     }
 //    Old method without pagination
 //    public List<Invoice> getAllInvoices() {
@@ -91,22 +103,38 @@ public class InvoiceService {
 
     @Transactional
     public Invoice updateInvoiceStatus(Long id, String newStatus) {
+        log.info("Updating invoice id: {} status to: {}", id, newStatus);
         Invoice existing = invoiceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Invoice", "id", id));
+                .orElseThrow(() -> {
+                    log.error("Invoice not found with id: {}", id);
+                    return new ResourceNotFoundException("Invoice", "id", id);
+                });
         validateStatusTransition(existing.getStatus(), newStatus);
         existing.setStatus(newStatus);
         existing.setUpdatedAt(LocalDateTime.now());
-        return invoiceRepository.save(existing);
+
+        Invoice updated = invoiceRepository.save(existing);
+        log.info("Invoice {} status updated to: {}", updated.getInvoiceNumber(), newStatus);
+        return updated;
     }
 
     @Transactional
     public void deleteInvoice(Long id) {
+        log.info("Deleting invoice with id: {}", id);
         Invoice existing = invoiceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Invoice", "id", id));
+                .orElseThrow(() -> {
+                    log.error("Invoice not found with id: {}", id);
+                    return new ResourceNotFoundException("Invoice", "id", id);
+                });
+
         if (!existing.getStatus().equals("DRAFT")) {
+            log.warn("Attempted to delete non-DRAFT invoice: {} with status: {}",
+                    id, existing.getStatus());
             throw new InvalidOperationException("Only DRAFT invoices can be deleted");
         }
+
         invoiceRepository.deleteById(id);
+        log.info("Invoice {} deleted successfully", id);
     }
 
     private void calculateTotal(Invoice invoice) {
@@ -132,6 +160,7 @@ public class InvoiceService {
         };
 
         if (!valid) {
+            log.warn("Invalid status transition attempted from: {} to: {}", currentStatus, newStatus);
             throw new InvalidOperationException(
                     "Invalid status transition from " + currentStatus + " to " + newStatus
             );
