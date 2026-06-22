@@ -1,0 +1,45 @@
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: billing-db
+    environment:
+      POSTGRES_USER: billing_user
+      POSTGRES_PASSWORD: billing_pass
+      POSTGRES_DB: billing_db
+      PGTZ: UTC
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U billing_user -d billing_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - billing-network
+
+  app:
+    build: .
+    container_name: invoice-manager-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/billing_db
+      SPRING_DATASOURCE_USERNAME: billing_user
+      SPRING_DATASOURCE_PASSWORD: billing_pass
+      APP_JWT_SECRET: 3f8a2b1c9d7e6f4a5b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a
+      APP_JWT_EXPIRATION: 86400000
+    ports:
+      - "8080:8080"
+    networks:
+      - billing-network
+
+networks:
+  billing-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
