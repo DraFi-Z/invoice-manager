@@ -30,6 +30,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/billing_db
       SPRING_DATASOURCE_USERNAME: billing_user
       SPRING_DATASOURCE_PASSWORD: billing_pass
+      SPRING_PROFILES_ACTIVE: prod
       APP_JWT_SECRET: 3f8a2b1c9d7e6f4a5b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a
       APP_JWT_EXPIRATION: 86400000
     ports:
