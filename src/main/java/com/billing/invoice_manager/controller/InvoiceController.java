@@ -7,12 +7,15 @@ import com.billing.invoice_manager.entity.Invoice;
 import com.billing.invoice_manager.exception.ResourceNotFoundException;
 import com.billing.invoice_manager.mapper.InvoiceMapper;
 import com.billing.invoice_manager.service.InvoiceService;
+import com.billing.invoice_manager.service.PdfService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -24,9 +27,11 @@ import java.util.stream.Collectors;
 public class InvoiceController {
 
     private final InvoiceService invoiceService;
+    private final PdfService pdfService;
 
-    public InvoiceController(InvoiceService invoiceService) {
+    public InvoiceController(InvoiceService invoiceService, PdfService pdfService) {
         this.invoiceService = invoiceService;
+        this.pdfService = pdfService;
     }
 
     @PostMapping
@@ -169,5 +174,20 @@ public class InvoiceController {
     public ResponseEntity<Void> deleteInvoice(@PathVariable Long id) {
         invoiceService.deleteInvoice(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/pdf")
+    public ResponseEntity<byte[]> downloadInvoicePdf(@PathVariable Long id) {
+        Invoice invoice = invoiceService.getInvoiceById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice", "id", id));
+
+        byte[] pdf = pdfService.generateInvoicePdf(invoice);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment",
+                invoice.getInvoiceNumber() + ".pdf");
+
+        return ResponseEntity.ok().headers(headers).body(pdf);
     }
 }

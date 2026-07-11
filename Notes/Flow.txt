@@ -145,3 +145,49 @@ DataSeeder.run() executes
     ↓
 Application ready on port 8080
 
+============================================================= Docker Contenarization =================================================================
+
+docker compose up --build
+        ↓
+Docker reads docker-compose.yml
+        ↓
+Sees app service has build: .
+→ Reads Dockerfile
+→ Stage 1 (build):
+    - Pulls eclipse-temurin:21-jdk-alpine
+    - Sets WORKDIR /app
+    - Copies pom.xml, .mvn, mvnw
+    - Downloads all Maven dependencies (cached if pom.xml unchanged)
+    - Copies src/
+    - Runs mvnw clean package → produces target/app.jar
+→ Stage 2 (final):
+    - Pulls eclipse-temurin:21-jre-alpine (fresh, clean)
+    - Copies only app.jar from Stage 1
+    - Sets ENV TZ=UTC
+    - Sets ENTRYPOINT
+→ Final image is ready (small, no build tools)
+        ↓
+Starts postgres container
+→ Injects POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, PGTZ
+→ PostgreSQL initializes, creates billing_db and billing_user
+→ Docker runs healthcheck every 5s: pg_isready -U billing_user -d billing_db
+→ After healthcheck passes → postgres marked as healthy
+        ↓
+Starts app container (only now, because condition: service_healthy)
+→ Injects all SPRING_* environment variables
+→ SPRING_PROFILES_ACTIVE=prod → loads application-prod.properties
+→ application-prod.properties reads ${SPRING_DATASOURCE_URL} from env
+→ JVM starts: java -Duser.timezone=UTC -jar app.jar
+→ Spring Boot reads properties → configures HikariCP connection pool
+→ HikariCP connects to postgres:5432 (service name on billing-network)
+→ Flyway runs migrations → validates schema
+→ Hibernate validates entities
+→ DataSeeder runs → creates admin user if no users exist
+→ Application ready on :8080
+        ↓
+Port mapping:
+  Your Windows :5432 → postgres container :5432
+  Your Windows :8080 → app container :8080
+        ↓
+Postman hits localhost:8080 → reaches your Spring Boot app
+Spring Boot hits postgres:5432 → reaches PostgreSQL
