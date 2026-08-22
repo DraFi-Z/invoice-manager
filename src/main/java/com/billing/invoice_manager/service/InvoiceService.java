@@ -26,14 +26,17 @@ public class InvoiceService {
     private final InvoiceRepository invoiceRepository;
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     //constructor injection
     public InvoiceService(InvoiceRepository invoiceRepository,
                           CustomerRepository customerRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,
+                          EmailService emailService) {
         this.invoiceRepository = invoiceRepository;
         this.customerRepository = customerRepository;
         this.userRepository = userRepository;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -101,22 +104,51 @@ public class InvoiceService {
         return invoiceRepository.findByCustomerId(customerId, pageable);
     }
 
+//    @Transactional
+//    public Invoice updateInvoiceStatus(Long id, String newStatus) {
+//        log.info("Updating invoice id: {} status to: {}", id, newStatus);
+//        Invoice existing = invoiceRepository.findById(id)
+//                .orElseThrow(() -> {
+//                    log.error("Invoice not found with id: {}", id);
+//                    return new ResourceNotFoundException("Invoice", "id", id);
+//                });
+//        validateStatusTransition(existing.getStatus(), newStatus);
+//        existing.setStatus(newStatus);
+//        existing.setUpdatedAt(LocalDateTime.now());
+//
+//        Invoice updated = invoiceRepository.save(existing);
+//        log.info("Invoice {} status updated to: {}", updated.getInvoiceNumber(), newStatus);
+//        return updated;
+//    }
+
     @Transactional
     public Invoice updateInvoiceStatus(Long id, String newStatus) {
         log.info("Updating invoice id: {} status to: {}", id, newStatus);
+
         Invoice existing = invoiceRepository.findById(id)
                 .orElseThrow(() -> {
                     log.error("Invoice not found with id: {}", id);
                     return new ResourceNotFoundException("Invoice", "id", id);
                 });
+
         validateStatusTransition(existing.getStatus(), newStatus);
         existing.setStatus(newStatus);
         existing.setUpdatedAt(LocalDateTime.now());
 
         Invoice updated = invoiceRepository.save(existing);
-        log.info("Invoice {} status updated to: {}", updated.getInvoiceNumber(), newStatus);
+        log.info("Invoice {} status updated to: {}",
+                updated.getInvoiceNumber(), newStatus);
+
+        if (newStatus.equals("SENT")) {
+            String customerEmail = updated.getCustomer().getEmail();
+            String customerName = updated.getCustomer().getName();
+            emailService.sendInvoiceEmail(updated, customerEmail, customerName);
+            log.info("Invoice email triggered for: {}", updated.getInvoiceNumber());
+        }
+
         return updated;
     }
+
 
     @Transactional
     public void deleteInvoice(Long id) {

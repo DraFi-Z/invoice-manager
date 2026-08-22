@@ -191,3 +191,30 @@ Port mapping:
         ↓
 Postman hits localhost:8080 → reaches your Spring Boot app
 Spring Boot hits postgres:5432 → reaches PostgreSQL
+
+
+=============================================================================================================================================
+TWO WAYS TO RUN YOUR APP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WAY 1 — Development (IntelliJ green button)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Profile: dev
+What runs in Docker: billing-db + mailhog ONLY
+What runs in IntelliJ: your Spring Boot app
+DB connection: localhost:5432 (direct to container)
+Mail connection: localhost:1025 (direct to mailhog)
+
+Use this during active development — fast restarts,
+debug mode, SQL logging, no rebuild needed.
+
+WAY 2 — Full stack Docker (docker compose up --build)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Profile: prod
+What runs in Docker: billing-db + app + mailhog (all 3)
+What runs in IntelliJ: nothing
+DB connection: postgres:5432 (service name, internal network)
+Mail connection: mailhog:1025 (service name, internal network)
+
+Use this to test the full containerized stack,
+or simulate production. Requires rebuild on code changes.
