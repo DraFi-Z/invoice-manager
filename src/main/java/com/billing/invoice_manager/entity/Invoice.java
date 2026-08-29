@@ -1,12 +1,18 @@
 package com.billing.invoice_manager.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "invoices")
 public class Invoice {
@@ -50,43 +56,43 @@ public class Invoice {
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<InvoiceLineItem> lineItems;
 
-    public Invoice() {
-    }
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getInvoiceNumber() { return invoiceNumber; }
-    public void setInvoiceNumber(String invoiceNumber) { this.invoiceNumber = invoiceNumber; }
-
-    public Customer getCustomer() { return customer; }
-    public void setCustomer(Customer customer) { this.customer = customer; }
-
-    public User getCreatedBy() { return createdBy; }
-    public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
-
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-
-    public LocalDate getIssueDate() { return issueDate; }
-    public void setIssueDate(LocalDate issueDate) { this.issueDate = issueDate; }
-
-    public LocalDate getDueDate() { return dueDate; }
-    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
-
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = notes; }
-
-    public BigDecimal getTotalAmount() { return totalAmount; }
-    public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-
-    public List<InvoiceLineItem> getLineItems() { return lineItems; }
-    public void setLineItems(List<InvoiceLineItem> lineItems) { this.lineItems = lineItems; }
+//    public Invoice() {
+//    }
+//
+//    public Long getId() { return id; }
+//    public void setId(Long id) { this.id = id; }
+//
+//    public String getInvoiceNumber() { return invoiceNumber; }
+//    public void setInvoiceNumber(String invoiceNumber) { this.invoiceNumber = invoiceNumber; }
+//
+//    public Customer getCustomer() { return customer; }
+//    public void setCustomer(Customer customer) { this.customer = customer; }
+//
+//    public User getCreatedBy() { return createdBy; }
+//    public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
+//
+//    public String getStatus() { return status; }
+//    public void setStatus(String status) { this.status = status; }
+//
+//    public LocalDate getIssueDate() { return issueDate; }
+//    public void setIssueDate(LocalDate issueDate) { this.issueDate = issueDate; }
+//
+//    public LocalDate getDueDate() { return dueDate; }
+//    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
+//
+//    public String getNotes() { return notes; }
+//    public void setNotes(String notes) { this.notes = notes; }
+//
+//    public BigDecimal getTotalAmount() { return totalAmount; }
+//    public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
+//
+//    public LocalDateTime getCreatedAt() { return createdAt; }
+//    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+//
+//    public LocalDateTime getUpdatedAt() { return updatedAt; }
+//    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+//
+//    public List<InvoiceLineItem> getLineItems() { return lineItems; }
+//    public void setLineItems(List<InvoiceLineItem> lineItems) { this.lineItems = lineItems; }
 
 }

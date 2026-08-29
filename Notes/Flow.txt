@@ -91,3 +91,130 @@ InvoiceController.getAllInvoices() executes
   → returns invoice list
             ↓
 200 OK
+
+
+===========================================================Request with no token===========================================================
+
+GET /api/invoices
+  (no Authorization header)
+            ↓
+JwtAuthenticationFilter runs
+  → no Authorization header found
+  → calls filterChain.doFilter() — passes through
+  → SecurityContextHolder has NO authentication
+            ↓
+SecurityConfig checks — /api/invoices requires authenticated()
+  → no authentication in context → BLOCKED
+            ↓
+401 Unauthorized
+
+============================================================Wrong role ======================================================================
+POST /api/users
+Authorization: Bearer <token with role ACCOUNTANT>
+            ↓
+JwtAuthenticationFilter runs
+  → valid token
+  → sets ROLE_ACCOUNTANT in SecurityContextHolder
+            ↓
+SecurityConfig checks — /api/users requires hasRole("ADMIN")
+  → ROLE_ACCOUNTANT ≠ ROLE_ADMIN → BLOCKED
+            ↓
+403 Forbidden
+
+
+=============================================================Security Chain =================================================================
+Spring starts
+    ↓
+Component scan finds:
+    @Component JwtService          → created, in context
+    @Component DataSeeder          → created, in context
+    @Configuration SecurityConfig  → created, injects JwtService
+        ↓
+    SecurityConfig @Bean methods called:
+        jwtAuthenticationFilter()  → creates filter manually
+        passwordEncoder()          → creates BCrypt encoder
+        securityFilterChain()      → builds security chain
+            places JwtAuthenticationFilter via addFilterBefore()
+            ↓
+    Security chain is now:
+        ... → JwtAuthenticationFilter → ... → AuthorizationFilter
+    ↓
+DataSeeder.run() executes
+    → checks if users exist
+    → creates admin if empty
+    ↓
+Application ready on port 8080
+
+============================================================= Docker Contenarization =================================================================
+
+docker compose up --build
+        ↓
+Docker reads docker-compose.yml
+        ↓
+Sees app service has build: .
+→ Reads Dockerfile
+→ Stage 1 (build):
+    - Pulls eclipse-temurin:21-jdk-alpine
+    - Sets WORKDIR /app
+    - Copies pom.xml, .mvn, mvnw
+    - Downloads all Maven dependencies (cached if pom.xml unchanged)
+    - Copies src/
+    - Runs mvnw clean package → produces target/app.jar
+→ Stage 2 (final):
+    - Pulls eclipse-temurin:21-jre-alpine (fresh, clean)
+    - Copies only app.jar from Stage 1
+    - Sets ENV TZ=UTC
+    - Sets ENTRYPOINT
+→ Final image is ready (small, no build tools)
+        ↓
+Starts postgres container
+→ Injects POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, PGTZ
+→ PostgreSQL initializes, creates billing_db and billing_user
+→ Docker runs healthcheck every 5s: pg_isready -U billing_user -d billing_db
+→ After healthcheck passes → postgres marked as healthy
+        ↓
+Starts app container (only now, because condition: service_healthy)
+→ Injects all SPRING_* environment variables
+→ SPRING_PROFILES_ACTIVE=prod → loads application-prod.properties
+→ application-prod.properties reads ${SPRING_DATASOURCE_URL} from env
+→ JVM starts: java -Duser.timezone=UTC -jar app.jar
+→ Spring Boot reads properties → configures HikariCP connection pool
+→ HikariCP connects to postgres:5432 (service name on billing-network)
+→ Flyway runs migrations → validates schema
+→ Hibernate validates entities
+→ DataSeeder runs → creates admin user if no users exist
+→ Application ready on :8080
+        ↓
+Port mapping:
+  Your Windows :5432 → postgres container :5432
+  Your Windows :8080 → app container :8080
+        ↓
+Postman hits localhost:8080 → reaches your Spring Boot app
+Spring Boot hits postgres:5432 → reaches PostgreSQL
+
+
+=============================================================================================================================================
+TWO WAYS TO RUN YOUR APP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WAY 1 — Development (IntelliJ green button)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Profile: dev
+What runs in Docker: billing-db + mailhog ONLY
+What runs in IntelliJ: your Spring Boot app
+DB connection: localhost:5432 (direct to container)
+Mail connection: localhost:1025 (direct to mailhog)
+
+Use this during active development — fast restarts,
+debug mode, SQL logging, no rebuild needed.
+
+WAY 2 — Full stack Docker (docker compose up --build)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Profile: prod
+What runs in Docker: billing-db + app + mailhog (all 3)
+What runs in IntelliJ: nothing
+DB connection: postgres:5432 (service name, internal network)
+Mail connection: mailhog:1025 (service name, internal network)
+
+Use this to test the full containerized stack,
+or simulate production. Requires rebuild on code changes.
