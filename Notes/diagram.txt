@@ -1,0 +1,23 @@
+Incoming Request (e.g., /api/users)
+        │
+        ▼
+ ┌───────────────┐
+ │ DelegatingFilterProxy  (Servlet Filter)
+ └──────┬────────┘
+        │ (Hands over control)
+        ▼
+ ┌───────────────┐
+ │ FilterChainProxy       (Spring Security Engine activated by @EnableWebSecurity)
+ └──────┬────────┘
+        │ (Matches URL & executes your custom Filter Chain)
+        ▼
+ ┌───────────────┐
+ │ 1. Disable CSRF
+ │ 2. Match Rules (ADMIN check)
+ │ 3. Execute jwtAuthenticationFilter()
+ └──────┬────────┘
+        │ (Passed security check)
+        ▼
+ ┌───────────────┐
+ │ @RestController Controller
+ └───────────────┘
